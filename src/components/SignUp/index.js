@@ -1,105 +1,94 @@
-import React, { Component } from 'react';
-import {Link, withRouter} from 'react-router-dom';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { FirebaseContext } from "../Firebase";
+import * as ROUTES from "../../constants/routes";
+import SignUpForm from "../SignUpForm";
 
-import {FirebaseContext} from '../Firebase'
-import * as ROUTES from '../../constants/routes'
+export default class SignUpPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: "",
+      email: "",
+      passwordOne: "",
+      passwordTwo: "",
+      error: null
+    };
+  }
 
-const SignUpPage = () => (
-    <div>
+  onChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
+
+ 
+  onSubmit = event => {
+    const { username, email, passwordOne } = this.state;
+    this.props.firebase
+      .doCreateUserWithEmailAndPassword(email, passwordOne)
+      .then(authUser => {
+        this.setState({
+          username: '',
+          email: '',
+          passwordOne:''
+        });
+        this.props.history.push('/cuenta');
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+    event.preventDefault();
+  };
+
+  render() {
+ 
+    return (
+      <div>
         <h1>SignUp</h1>
         <FirebaseContext.Consumer>
-            {firebase => <SignUpForm firebase={ firebase} />}
-        </FirebaseContext.Consumer>
-    </div>
-  );
-
-const INITIAL_STATE = {
-    username:'',
-    email:'',
-    passwordOne:'',
-    passwordTwo:'',
-    error:'',
-};
-
-class SignUpForm extends Component {
-    constructor(props){
-        super(props);
-        this.state={...INITIAL_STATE};
-    }
-
-    onSubmit= event =>{
-        const { username, email, passwordOne}=this.state;
-        this.props.firebase
-        .doCreateUserWithEmailANdPassword(email,passwordOne)
-        .then(authUser => {
-            this.state ({...INITIAL_STATE});
-            this.props.history.push(ROUTES.HOME);
-        })
-        .catch(error =>{
-            this.state({ error });
-        });
-        /* evita la recarga del navegador*/
-        event.preventDefault();
-  
-    };
-
-    /* The input fields need to update the local state of the component by using a onChange handler*/
-    onChange= event =>{
-        this.setState({[event.target.name]: event.target.value});
-    };
-
-    render() {
-        const{
-            username,
-            email,
-            passwordOne,
-            passwordTwo,
-            error,
-        }= this.state;
-        const isInvalid =
-        passwordOne !== passwordTwo ||
-        passwordOne === '' ||
-        email === '' ||
-        username === '';
-        return (
-          <form onSubmit={this.onSubmit}>
-            <input type="text"
-            name="username"
-            value={username}
-            onChange={this.onChange}
-            placeholder="FullName"
+        {firebase =><form onSubmit={this.onSubmit} firebase={firebase} >
+            <input
+              name="username"
+              value={this.state.username}
+              onChange={this.onChange}
+              type="text"
+              placeholder="Full Name"
             />
-            <input type="email"
-              value={email}
+            <input
               name="email"
+              value={this.state.email}
               onChange={this.onChange}
-              placeholder="FullName"/>
-
-            <input type="passwordOne"
-              value={passwordOne}
+              type="text"
+              placeholder="Email Address"
+            />
+            <input
               name="passwordOne"
+              value={this.state.passwordOne}
               onChange={this.onChange}
-              placeholder="Password"/>
-
-            <input type="passwordTwo"
-              value={passwordTwo}
+              type="password"
+              placeholder="Password"
+            />
+            <input
               name="passwordTwo"
+              value={this.state.passwordTwo}
               onChange={this.onChange}
-              placeholder="Confirm Password"/>
+              type="password"
+              placeholder="Confirm Password"
+            />
+            <button type="submit">
+              Sign Up
+            </button>
+            
+          </form>}
+        </FirebaseContext.Consumer>
 
-            <button disable={isInvalid} type="submit">Sign Up</button>
-
-            {error && <p>{error.message}</p>}  
-          </form>
-        )
-    }
+        <label htmlFor="">
+          Tienes una cuenta?<Link to="/signup">Restrarse</Link>
+        </label>
+      </div>
+    );
+  }
 }
 
-const SignUpLink = () =>(
-    <p>
-        Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign Up</Link>
-    </p>
-);
-
-export default SignUpPage;
-export { SignUpForm,SignUpLink };
+//Para poder exportar internamente

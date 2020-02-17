@@ -1,3 +1,4 @@
+/*import FirebaseContext, {withFirebase} from './context';*/
 import FirebaseContext from './context';
 import Firebase from './firebase'
 
